@@ -1,4 +1,3 @@
-
 from flask import Flask, request, send_file
 import requests
 import subprocess
@@ -15,25 +14,30 @@ def index():
     watermarked_filename = 'watermarked_video.mp4'
     watermark_text = 'ronok'
     
-    # Download the video
-    video_response = requests.get(video_url)
-    if video_response.status_code != 200:
-        return "Failed to download the video.", 400
-
-    with open(video_filename, 'wb') as f:
-        f.write(video_response.content)
+    try:
+        # Download the video
+        video_response = requests.get(video_url)
+        video_response.raise_for_status()
+        
+        with open(video_filename, 'wb') as f:
+            f.write(video_response.content)
+        
+        # Add watermark using FFmpeg
+        ffmpeg_command = [
+            'ffmpeg', '-i', video_filename,
+            '-vf', f"drawtext=text='{watermark_text}':x=10:y=h-th-10:fontcolor=white:fontsize=24",
+            '-codec:a', 'copy', watermarked_filename
+        ]
+        
+        subprocess.run(ffmpeg_command, check=True)
+        
+        # Send the watermarked video
+        return send_file(watermarked_filename, as_attachment=True)
     
-    # Add watermark using FFmpeg
-    ffmpeg_command = [
-        'ffmpeg', '-i', video_filename,
-        '-vf', f"drawtext=text='{watermark_text}':x=10:y=h-th-10:fontcolor=white:fontsize=24",
-        '-codec:a', 'copy', watermarked_filename
-    ]
-    
-    subprocess.run(ffmpeg_command)
-    
-    # Send the watermarked video
-    return send_file(watermarked_filename, as_attachment=True)
+    except requests.exceptions.RequestException as e:
+        return f"Failed to download the video: {str(e)}", 400
+    except subprocess.CalledProcessError as e:
+        return f"Failed to process the video: {str(e)}", 500
 
 if __name__ == '__main__':
     app.run(debug=True)
