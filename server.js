@@ -25,6 +25,14 @@ async function downloadVideo(url, outputPath) {
   });
 }
 
+// Ensure the output directory exists
+const ensureOutputDirectoryExists = (filePath) => {
+  const dir = path.dirname(filePath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+};
+
 // Route to handle video watermarking
 app.get('/watermark', async (req, res) => {
   const videoUrl = req.query.w;
@@ -35,13 +43,15 @@ app.get('/watermark', async (req, res) => {
   const inputPath = path.join(__dirname, 'input.mp4');
   const outputPath = path.join(__dirname, 'output.mp4');
 
+  ensureOutputDirectoryExists(outputPath);
+
   try {
     // Download the video
     await downloadVideo(videoUrl, inputPath);
 
     // Add watermark using FFmpeg
     ffmpeg(inputPath)
-      .outputOptions('-vf', 'drawtext=text=\'ronok\':fontcolor=white:fontsize=24:box=1:boxcolor=black@0.5:boxborderw=5:x=(w-text_w)/2:y=h-th-10')
+      .outputOptions('-vf', 'drawtext=text=\\'ronok\\':fontcolor=white:fontsize=24:box=1:boxcolor=black@0.5:boxborderw=5:x=(w-text_w)/2:y=h-th-10')
       .on('end', () => {
         // Send the watermarked video
         res.sendFile(outputPath);
