@@ -1,0 +1,37 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Video Watermark</title>
+</head>
+<body>
+  <h1>Video Watermark</h1>
+  <form id="watermarkForm">
+    <label for="videoUrl">Video URL:</label>
+    <input type="text" id="videoUrl" name="videoUrl" required>
+    <button type="submit">Watermark Video</button>
+  </form>
+  <div id="result"></div>
+
+  <script>
+    document.getElementById('watermarkForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const videoUrl = document.getElementById('videoUrl').value;
+      const response = await fetch(`/watermark?w=${encodeURIComponent(videoUrl)}`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const videoElement = document.createElement('video');
+        videoElement.src = url;
+        videoElement.controls = true;
+        document.getElementById('result').innerHTML = '';
+        document.getElementById('result').appendChild(videoElement);
+      } else {
+        document.getElementById('result').innerText = 'Error watermarking video';
+      }
+    });
+  </script>
+</body>
+</html>
