@@ -18,7 +18,7 @@ bot.on('photo', async (ctx) => {
     const params = new URLSearchParams({
       mainImageUrl,
       markImageUrl: watermarkUrl,
-      markRatio: '0.5',
+      markRatio: '0.7',
       position: 'center'
     });
 
