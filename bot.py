@@ -4,7 +4,6 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 import requests
 from io import BytesIO
 import threading
-import os
 
 # Configure logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -15,7 +14,7 @@ def start(update: Update, context: CallbackContext) -> None:
     update.message.reply_text('Hello! Send me a photo and I will watermark it for you.')
 
 # Define the function to watermark the image
-def watermark_image(main_image_url: str, mark_image_url: str = "https://i.ibb.co/n6tHyjw/20240627-001522.png", mark_ratio: float = 0.7, position: str = "center") -> BytesIO:
+def watermark_image(main_image_url: str, mark_image_url: str = "https://i.ibb.co/n6tHyjw/20240627-001522.png", mark_ratio: float = 0.5, position: str = "center") -> BytesIO:
     url = f"https://quickchart.io/watermark?mainImageUrl={main_image_url}&markImageUrl={mark_image_url}&markRatio={mark_ratio}&position={position}"
     response = requests.get(url)
     watermarked_image = BytesIO(response.content)
@@ -40,8 +39,10 @@ def process_photo(update: Update, context: CallbackContext, file_id: str, captio
     update.message.reply_photo(photo=InputFile(watermarked_image), caption=caption)
 
 def main() -> None:
+    # Replace with your actual bot token
+    token = "6701652400:AAHETpJXne_OoLErwK41ENt7Xg_479O9RCM"
     # Initialize the bot and dispatcher
-    updater = Updater(os.getenv("TELEGRAM_BOT_TOKEN"))
+    updater = Updater(token)
     dispatcher = updater.dispatcher
 
     # Register the handlers
